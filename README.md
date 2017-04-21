@@ -1,1 +1,1 @@
-Android application - Omni-Link
+Android application for the Omni-Link protocol
