@@ -1,1 +1,1 @@
-Android application for the Omni-Link protocol
+Android application for systems that support the Omni-Link protocol (e.g. HAI Omni IIe)
