@@ -11,6 +11,7 @@ import net.homeip.mleclerc.omnilinkanclient.model.MessageModelListener;
 import net.homeip.mleclerc.omnilinkanclient.model.ModelException;
 import android.content.Context;
 import android.os.Handler;
+import java.util.concurrent.ExecutorService;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -43,8 +44,8 @@ public class MessageCategory extends Category implements MessageModelListener {
 	private InformationModel infoModel;
 	private View[] messageViews;
 
-	public MessageCategory(Context context, MessageModel messageModel, InformationModel infoModel, DisplayMetrics displayMetrics) {
-		super(context, displayMetrics);
+	public MessageCategory(Context context, MessageModel messageModel, InformationModel infoModel, DisplayMetrics displayMetrics, ExecutorService executor) {
+		super(context, displayMetrics, executor);
 
 		this.messageModel = messageModel;
 		this.infoModel = infoModel;

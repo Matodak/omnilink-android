@@ -9,6 +9,7 @@ import net.homeip.mleclerc.omnilinkanclient.model.UnitModelListener;
 import net.homeip.mleclerc.omnilinkanclient.model.enumeration.UnitControl;
 import android.content.Context;
 import android.os.Handler;
+import java.util.concurrent.ExecutorService;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -17,8 +18,8 @@ public class UnitCategory extends Category implements UnitModelListener {
 	private UnitModel unitModel;
 	private View[] unitViews;
 	
-	public UnitCategory(Context context, UnitModel unitModel, DisplayMetrics displayMetrics) {
-		super(context, displayMetrics);
+	public UnitCategory(Context context, UnitModel unitModel, DisplayMetrics displayMetrics, ExecutorService executor) {
+		super(context, displayMetrics, executor);
 		
 		this.unitModel = unitModel;
 	}

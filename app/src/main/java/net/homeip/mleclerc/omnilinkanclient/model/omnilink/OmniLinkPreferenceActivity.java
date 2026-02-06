@@ -10,7 +10,6 @@ public class OmniLinkPreferenceActivity extends PreferenceActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
 		PreferenceManager manager = getPreferenceManager();
 		manager.setSharedPreferencesName("preferences");
 		addPreferencesFromResource(R.xml.preferences);

@@ -4,13 +4,17 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import net.homeip.mleclerc.omnilinkanclient.R;
 import net.homeip.mleclerc.omnilinkanclient.model.ModelException;
 import net.homeip.mleclerc.omnilinkanclient.util.MySpinner;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -43,13 +47,15 @@ public abstract class Category {
 
 	public final static int DATE_LONG = 1;
 	public final static int TIME_LONG = 2;
-	
+
+	private final ExecutorService executor;
 	private Context context;
 	private ProgressDialog progressDialog;
 	private int buttonHeight;
 	
-	protected Category(Context context, DisplayMetrics displayMetrics) {
+	protected Category(Context context, DisplayMetrics displayMetrics, ExecutorService executor) {
 		this.context = context;
+		this.executor = executor;
 		this.buttonHeight = 0;
 		if (displayMetrics.density == 4.0)
 		{
@@ -83,6 +89,14 @@ public abstract class Category {
 	
 	protected Context getContext() {
 		return context;
+	}
+
+	protected void runOnUiThread(Runnable runnable) {
+		if (context instanceof Activity) {
+			((Activity) context).runOnUiThread(runnable);
+		} else {
+			new Handler(Looper.getMainLooper()).post(runnable);
+		}
 	}
 
 	public String toString() {
@@ -315,33 +329,24 @@ public abstract class Category {
 		@Override
 		public void onClick(View view) {
 			final Button button = (Button) view;
-			AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
-				@Override
-				protected void onPreExecute() {
-					progressDialog.show();					
-					execution.preExecute();
+			progressDialog.show();
+			execution.preExecute();
+			executor.execute(() -> {
+				boolean success;
+				try {
+					success = execution.execute(button.getText().toString());
+				} catch (ModelException e) {
+					success = false;
 				}
-				
-				@Override
-				protected Boolean doInBackground(Void... params) {
-					try {
-						String buttonText = button.getText().toString();
-						return execution.execute(buttonText);
-					} catch (ModelException e) {
-						return false;
-					}
-				}
-
-				@Override
-				protected void onPostExecute(Boolean success) {
-					execution.postExecute(success);
+				final boolean result = success;
+				runOnUiThread(() -> {
+					execution.postExecute(result);
 					progressDialog.dismiss();
 					if (execution.isDisplayToast()) {
-						displayToast(success);
+						displayToast(result);
 					}
-				}
-			};
-			task.execute();
+				});
+			});
 		}
 	};
 
@@ -366,38 +371,29 @@ public abstract class Category {
 			
 			if (pos != lastPos) {
 				final Object selection = parent.getItemAtPosition(pos);
-				AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
-					@Override
-					protected void onPreExecute() {
-						progressDialog.show();
-						execution.preExecute();
+				progressDialog.show();
+				execution.preExecute();
+				executor.execute(() -> {
+					boolean success;
+					try {
+						success = execution.execute(selection);
+					} catch (ModelException ex) {
+						success = false;
 					}
-
-					@SuppressWarnings("unchecked")
-					@Override
-					protected Boolean doInBackground(Void... params) {
-						try {
-							return execution.execute(selection);
-						} catch (ModelException ex) {
-							return false;
-						}
-					}
-
-					@Override
-					protected void onPostExecute(Boolean success) {
-						execution.postExecute(success);
+					final boolean result = success;
+					runOnUiThread(() -> {
+						execution.postExecute(result);
 						progressDialog.dismiss();
 						if (execution.isDisplayToast()) {
-							displayToast(success);
+							displayToast(result);
 						}
-						if (success) {
+						if (result) {
 							lastPos = pos;
 						} else {
 							parent.setSelection(lastPos);
 						}
-					}
-				};
-				task.execute();
+					});
+				});
 			}
 		}
 
@@ -417,36 +413,27 @@ public abstract class Category {
 				return;
 			}
 			
-			AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
-				@Override
-				protected void onPreExecute() {
-					progressDialog.show();					
-					execution.preExecute();
+			progressDialog.show();
+			execution.preExecute();
+			executor.execute(() -> {
+				boolean success;
+				try {
+					success = execution.execute(isChecked);
+				} catch (ModelException ex) {
+					success = false;
 				}
-
-				@SuppressWarnings("unchecked")
-				@Override
-				protected Boolean doInBackground(Void... params) {
-					try {
-						return execution.execute(isChecked);
-					} catch (ModelException ex) {
-						return false;
-					}
-				}
-
-				@Override
-				protected void onPostExecute(Boolean success) {
-					execution.postExecute(success);
+				final boolean result = success;
+				runOnUiThread(() -> {
+					execution.postExecute(result);
 					progressDialog.dismiss();
 					if (execution.isDisplayToast()) {
-						displayToast(success);
+						displayToast(result);
 					}
-					if (!success) {
+					if (!result) {
 						buttonView.setChecked(!isChecked);
 					}
-				}
-			};
-			task.execute();
+				});
+			});
 		}
 	};
 }

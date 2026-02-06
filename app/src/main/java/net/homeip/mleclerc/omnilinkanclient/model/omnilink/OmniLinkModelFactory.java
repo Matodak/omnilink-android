@@ -7,6 +7,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import net.homeip.mleclerc.omnilink.CommunicationException;
 import net.homeip.mleclerc.omnilink.NetworkCommunication;
@@ -26,13 +28,13 @@ import net.homeip.mleclerc.omnilinkanclient.model.UnitModel;
 import net.homeip.mleclerc.omnilinkanclient.model.ZoneModel;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 
 public class OmniLinkModelFactory implements ModelFactory {
 	private final static SystemTypeEnum SYSTEM_TYPE = SystemTypeEnum.HAI_OMNI_IIE;
 	private final static ProtocolTypeEnum PROTOCOL_TYPE = ProtocolTypeEnum.HAI_OMNI_LINK_II;
 	private final static int KEEPALIVE_TIMEOUT = 30 * 1000;
 	
+	private final ExecutorService executor = Executors.newSingleThreadExecutor();
 	private Context context;
 	private NetworkCommunication comm;
 	private Timer keepAliveTimer = new Timer();
@@ -101,6 +103,7 @@ public class OmniLinkModelFactory implements ModelFactory {
 			closeCommunication();
 		} catch (CommunicationException ex) {
 		}
+		executor.shutdown();
 	}
 
 	protected void delete(String filename) {
@@ -173,7 +176,17 @@ public class OmniLinkModelFactory implements ModelFactory {
 
 			// Close communications
 			if (comm.isOpen()) {
-				new CloseNetworkCommunicationTask();
+				try {
+					executor.submit(() -> {
+						try {
+							comm.close();
+						} catch (CommunicationException e) {
+							e.printStackTrace();
+						}
+					}).get();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 			comm = null;
 		}
@@ -206,16 +219,4 @@ public class OmniLinkModelFactory implements ModelFactory {
 		}
 	}
 	
-	private class CloseNetworkCommunicationTask extends AsyncTask<Void, Void, NetworkCommunication> {
-		@Override
-		protected NetworkCommunication doInBackground(Void... params) {
-			try {
-				comm.close();
-				return comm;
-			} catch (CommunicationException ex) {
-				ex.printStackTrace();
-				return null;
-			}
-		}
-	}
 }

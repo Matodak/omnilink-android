@@ -11,6 +11,7 @@ import net.homeip.mleclerc.omnilinkanclient.model.enumeration.SystemStatus;
 import net.homeip.mleclerc.omnilinkanclient.util.EnumLabel;
 import android.content.Context;
 import android.os.Handler;
+import java.util.concurrent.ExecutorService;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -25,8 +26,8 @@ public class SystemCategory extends Category implements SystemModelListener {
 	private View phoneLineStatusView;
 	private View securityModeView;
 	
-	public SystemCategory(Context context, SystemModel systemModel, DisplayMetrics displayMetrics) {
-		super(context, displayMetrics);
+	public SystemCategory(Context context, SystemModel systemModel, DisplayMetrics displayMetrics, ExecutorService executor) {
+		super(context, displayMetrics, executor);
 		
 		this.systemModel = systemModel;
 		

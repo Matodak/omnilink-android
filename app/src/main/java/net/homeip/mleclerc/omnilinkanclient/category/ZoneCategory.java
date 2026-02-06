@@ -11,6 +11,7 @@ import net.homeip.mleclerc.omnilinkanclient.model.enumeration.ZoneCondition;
 import net.homeip.mleclerc.omnilinkanclient.util.EnumLabel;
 import android.content.Context;
 import android.os.Handler;
+import java.util.concurrent.ExecutorService;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -22,8 +23,8 @@ public class ZoneCategory extends Category implements ZoneModelListener {
 	private ZoneModel zoneModel;
 	View[] zoneViews;
 	
-	public ZoneCategory(Context context, ZoneModel zoneModel, DisplayMetrics displayMetrics) {
-		super(context, displayMetrics);
+	public ZoneCategory(Context context, ZoneModel zoneModel, DisplayMetrics displayMetrics, ExecutorService executor) {
+		super(context, displayMetrics, executor);
 		
 		this.zoneModel = zoneModel;
 

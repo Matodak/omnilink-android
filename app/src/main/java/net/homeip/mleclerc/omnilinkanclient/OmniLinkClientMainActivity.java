@@ -2,6 +2,8 @@ package net.homeip.mleclerc.omnilinkanclient;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import net.homeip.mleclerc.omnilinkanclient.category.ButtonCategory;
 import net.homeip.mleclerc.omnilinkanclient.category.Category;
@@ -30,7 +32,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.Menu;
@@ -59,12 +60,13 @@ public class OmniLinkClientMainActivity extends Activity implements OnItemSelect
 	private final static String CATEGORY_PROP = "category";
 	private final static String OMNILINK_MODEL_PROP = "useOmniLinkModel";
 	private final static String CONFIGURED_PROP = "configured";
-	private final static int PREFS_UPDATED = 1;
-	private final static int PREFS_CONFIGURED = 2;
 	private final static int MENU_REFRESH = Menu.FIRST;
 	private final static int MENU_MODEL = Menu.FIRST + 1;
 	private final static int MENU_OPTIONS = Menu.FIRST + 2;
 	private final static int MENU_EXIT = Menu.FIRST + 3;
+	private final static int PREFS_UPDATED = 1;
+	private final static int PREFS_CONFIGURED = 2;
+	private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -95,13 +97,13 @@ public class OmniLinkClientMainActivity extends Activity implements OnItemSelect
 			ZoneModel zoneModel = modelFactory.createZoneModel();
 			InformationModel infoModel = modelFactory.createInformationModel();
 	
-			addCategory(new SystemCategory(this, systemModel, displayMetrics));
-			addCategory(new ThermostatCategory(this, thermostatModel, displayMetrics));
-			addCategory(new MessageCategory(this, messageModel, infoModel, displayMetrics));
-			addCategory(new ButtonCategory(this, buttonModel, displayMetrics));
-			addCategory(new UnitCategory(this, unitModel, displayMetrics));
-			addCategory(new ZoneCategory(this, zoneModel, displayMetrics));
-			addCategory(new InformationCategory(this, infoModel, systemModel, displayMetrics));
+			addCategory(new SystemCategory(this, systemModel, displayMetrics, executor));
+			addCategory(new ThermostatCategory(this, thermostatModel, displayMetrics, executor));
+			addCategory(new MessageCategory(this, messageModel, infoModel, displayMetrics, executor));
+			addCategory(new ButtonCategory(this, buttonModel, displayMetrics, executor));
+			addCategory(new UnitCategory(this, unitModel, displayMetrics, executor));
+			addCategory(new ZoneCategory(this, zoneModel, displayMetrics, executor));
+			addCategory(new InformationCategory(this, infoModel, systemModel, displayMetrics, executor));
 	
 			// Get the category to display
 			int categoryPos =  (savedInstanceState != null) ? savedInstanceState.getInt(CATEGORY_PROP, 0) : 0;
@@ -169,9 +171,7 @@ public class OmniLinkClientMainActivity extends Activity implements OnItemSelect
 		{
 			// Store the new model to use
 			useOmniLink = !useOmniLink;
-	        SharedPreferences.Editor ed = sharedPrefs.edit();
-	        ed.putBoolean(OMNILINK_MODEL_PROP, useOmniLink);
-	        ed.commit();
+	        sharedPrefs.edit().putBoolean(OMNILINK_MODEL_PROP, useOmniLink).apply();
 	        
 	        // Restart activity
 	        restartActivity();
@@ -199,70 +199,58 @@ public class OmniLinkClientMainActivity extends Activity implements OnItemSelect
 
 	private void displayCategory(final Category category, final boolean refresh) {
 		selectedCategory = category;
-		
-		AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
-			@Override
-			protected void onPreExecute() {
-				for (View view : views) {
-					mainLayout.removeView(view);
-				}
-				views = new View[0];
 
-				// Display a waiting message
-				if (refresh || !selectedCategory.isLoaded()) {
-					progressDialog.show();
+		for (View view : views) {
+			mainLayout.removeView(view);
+		}
+		views = new View[0];
+		if (refresh || !selectedCategory.isLoaded()) {
+			progressDialog.show();
+		}
+
+		executor.execute(() -> {
+			boolean success;
+			try {
+				if (refresh) {
+					selectedCategory.reset();
 				}
+				if (!selectedCategory.isLoaded()) {
+					selectedCategory.load();
+				}
+				success = true;
+			} catch (ModelException ex) {
+				ex.printStackTrace();
+				success = false;
 			}
-
-			protected Boolean doInBackground(Void... params) {
-				try {
-					if (refresh) {
-						selectedCategory.reset();
-					}
-					
-					if (!selectedCategory.isLoaded()) {
-						selectedCategory.load();
-					}
-					
-					return true;
-				} catch (ModelException ex) {
-					ex.printStackTrace();
-					return false;
-				}
-			}
-
-			protected void onPostExecute(Boolean success) {
-				// Remove the waiting message
+			final boolean result = success;
+			final Category loadedCategory = category;
+			runOnUiThread(() -> {
 				if (progressDialog.isShowing()) {
 					progressDialog.dismiss();
 				}
-
-				if (success) {
-					View[] views = selectedCategory.getViews();
-					for (View view : views) {
-						mainLayout.addView(view);
+				if (result) {
+					if (selectedCategory == loadedCategory) {
+						View[] newViews = loadedCategory.getViews();
+						for (View view : newViews) {
+							mainLayout.addView(view);
+						}
+						views = newViews;
 					}
-					OmniLinkClientMainActivity.this.views = views;
 				} else {
 					AlertDialog dialog = new AlertDialog.Builder(OmniLinkClientMainActivity.this).create();
 					dialog.setTitle(R.string.DIALOG_ERROR_TITLE);
-					dialog.setMessage(getString(R.string.DIALOG_ERROR_MESSAGE, selectedCategory.getName()));
+					dialog.setMessage(getString(R.string.DIALOG_ERROR_MESSAGE, loadedCategory.getName()));
 					dialog.setButton(AlertDialog.BUTTON_NEUTRAL, getString(R.string.DIALOG_ERROR_BUTTON),
-							new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									// Reset all the categories
-									for (Category category : categories) {
-										category.reset();
-									}
-									displayCategory(category, false);
+							(d, which) -> {
+								for (Category c : categories) {
+									c.reset();
 								}
+								displayCategory(loadedCategory, false);
 							});
 					dialog.show();
 				}
-			}
-		};
-		task.execute();
+			});
+		});
 	}
 
 	@Override
@@ -292,35 +280,32 @@ public class OmniLinkClientMainActivity extends Activity implements OnItemSelect
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
 		switch (requestCode) {
-        case PREFS_UPDATED:
-        	if (preferencesChanged) {
-        		restartActivity();
-        	}
-            break;
+		case PREFS_UPDATED:
+			if (preferencesChanged) {
+				restartActivity();
+			}
+			break;
 		case PREFS_CONFIGURED:
 			if (preferencesChanged) {
-		        SharedPreferences.Editor ed = sharedPrefs.edit();
-		        ed.putBoolean(CONFIGURED_PROP, true);
-		        ed.commit();
+				sharedPrefs.edit().putBoolean(CONFIGURED_PROP, true).apply();
 				restartActivity();
 			} else {
 				finish();
 			}
 			break;
 		}
-    }
+	}
 
 	private boolean showPreferenceScreen(int requestCode) {
 		Class preferenceActivityClass = modelFactory.getPreferenceActivityClass();
 		if (preferenceActivityClass != null) {
 			preferencesChanged = false;
-			Intent intent = new Intent();
-			intent.setClass(this, preferenceActivityClass);
+			Intent intent = new Intent(this, preferenceActivityClass);
 			startActivityForResult(intent, requestCode);
 			return true;
 		}
-		
 		return false;
 	}
 	
@@ -334,5 +319,11 @@ public class OmniLinkClientMainActivity extends Activity implements OnItemSelect
 	
 	private void addCategory(Category category) {
 		categories.add(category);
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		executor.shutdown();
 	}
 }

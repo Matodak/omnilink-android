@@ -15,6 +15,8 @@ import net.homeip.mleclerc.omnilinkanclient.model.enumeration.SystemType;
 import net.homeip.mleclerc.omnilinkanclient.util.EnumLabel;
 import android.app.Dialog;
 import android.content.Context;
+
+import java.util.concurrent.ExecutorService;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -28,8 +30,8 @@ public class InformationCategory extends Category {
 	private SystemModel systemModel;
 	private Dialog eventLogDialog;
 
-	public InformationCategory(Context context, InformationModel infoModel, SystemModel systemModel, DisplayMetrics displayMetrics) {
-		super(context, displayMetrics);
+	public InformationCategory(Context context, InformationModel infoModel, SystemModel systemModel, DisplayMetrics displayMetrics, ExecutorService executor) {
+		super(context, displayMetrics, executor);
 
 		this.infoModel = infoModel;
 		this.systemModel = systemModel;

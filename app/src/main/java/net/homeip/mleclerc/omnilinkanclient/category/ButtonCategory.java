@@ -7,13 +7,15 @@ import net.homeip.mleclerc.omnilinkanclient.model.ButtonModel;
 import net.homeip.mleclerc.omnilinkanclient.model.ModelException;
 import android.content.Context;
 import android.util.DisplayMetrics;
+
+import java.util.concurrent.ExecutorService;
 import android.view.View;
 
 public class ButtonCategory extends Category {
 	private ButtonModel buttonModel;
 	
-	public ButtonCategory(Context context, ButtonModel buttonModel, DisplayMetrics displayMetrics) {
-		super(context, displayMetrics);
+	public ButtonCategory(Context context, ButtonModel buttonModel, DisplayMetrics displayMetrics, ExecutorService executor) {
+		super(context, displayMetrics, executor);
 		
 		this.buttonModel = buttonModel;
 	}
