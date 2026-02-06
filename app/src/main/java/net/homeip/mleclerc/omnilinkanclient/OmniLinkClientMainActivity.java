@@ -112,10 +112,10 @@ public class OmniLinkClientMainActivity extends Activity implements OnItemSelect
 			mainLayout = new LinearLayout(this);
             int topPadding = 0;
             if (displayMetrics.density == 2.625)
-                if (displayMetrics.heightPixels > 2400)
-                    topPadding = 300; // Pixel 9a
+                if (displayMetrics.heightPixels <= 2400)
+                    topPadding = 275; // Pixel 7
                 else
-                    topPadding = 200; // Medium Phone
+                    topPadding = 300; // Pixel 9a
             else
                 topPadding = 100; // Samsung tablet
             mainLayout.setPadding(0, topPadding, 0, 0);

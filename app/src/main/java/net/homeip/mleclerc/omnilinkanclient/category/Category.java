@@ -57,17 +57,11 @@ public abstract class Category {
 		this.context = context;
 		this.executor = executor;
         if (displayMetrics.density == 2.625)
-        {
             this.buttonHeight = 96;
-        }
         else if (displayMetrics.density == 4.0)
-        {
             this.buttonHeight = 128;
-        }
         else
-        {
             this.buttonHeight = 72;
-        }
 
 		progressDialog = new ProgressDialog(context);
 		progressDialog.setMessage(context.getString(R.string.EXECUTING));
