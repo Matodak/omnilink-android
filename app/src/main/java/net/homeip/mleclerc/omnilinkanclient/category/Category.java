@@ -5,7 +5,6 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import net.homeip.mleclerc.omnilinkanclient.R;
 import net.homeip.mleclerc.omnilinkanclient.model.ModelException;
