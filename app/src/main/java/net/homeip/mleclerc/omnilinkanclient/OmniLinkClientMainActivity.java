@@ -115,13 +115,8 @@ public class OmniLinkClientMainActivity extends Activity implements OnItemSelect
 					categories);
 			spinner = new Spinner(this);
 			spinner.setAdapter(adapter);
-			spinner.setLayoutParams(new LinearLayout.LayoutParams(
-					ViewGroup.LayoutParams.MATCH_PARENT,
-					ViewGroup.LayoutParams.WRAP_CONTENT));
-			spinner.setMinimumHeight((int) (48 * displayMetrics.density));
-			spinner.setBackgroundColor(Color.WHITE);
-			spinner.setPadding((int) (16 * displayMetrics.density), (int) (8 * displayMetrics.density),
-					(int) (16 * displayMetrics.density), (int) (8 * displayMetrics.density));
+			spinner.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+					ViewGroup.LayoutParams.WRAP_CONTENT, 0));
 			spinner.setSelection(categoryPos);
 			spinner.setOnItemSelectedListener(this);
 			mainLayout.addView(spinner);
@@ -137,16 +132,10 @@ public class OmniLinkClientMainActivity extends Activity implements OnItemSelect
 	@Override
 	protected void onStart() {
 		super.onStart();
-		if (spinner != null && !categories.isEmpty()) {
-			if (selectedCategory != null) {
-				displayCategory(selectedCategory, true);
-			} else {
-				// Initial load: show the category selector and load the selected category
-				int pos = spinner.getSelectedItemPosition();
-				if (pos >= 0 && pos < categories.size()) {
-					displayCategory(categories.get(pos), false);
-				}
-			}
+		
+		if (selectedCategory != null)
+		{
+			displayCategory(selectedCategory, true);
 		}
 	}
 
