@@ -14,6 +14,7 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name="net.homeip.mleclerc.omnilinkanclient.OmniLinkClientMainActivity"
+            android:exported="true"
             android:label="@string/TITLE_ACTIVITY_MAIN" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
