@@ -51,20 +51,24 @@ public abstract class Category {
 	private Context context;
 	private ProgressDialog progressDialog;
 	private int buttonHeight;
+
 	
 	protected Category(Context context, DisplayMetrics displayMetrics, ExecutorService executor) {
 		this.context = context;
 		this.executor = executor;
-		this.buttonHeight = 0;
-		if (displayMetrics.density == 4.0)
-		{
-			buttonHeight = 128;
-		}
-		else
-		{
-			buttonHeight = 72;
-		}
-		
+        if (displayMetrics.density == 2.625)
+        {
+            this.buttonHeight = 96;
+        }
+        else if (displayMetrics.density == 4.0)
+        {
+            this.buttonHeight = 128;
+        }
+        else
+        {
+            this.buttonHeight = 72;
+        }
+
 		progressDialog = new ProgressDialog(context);
 		progressDialog.setMessage(context.getString(R.string.EXECUTING));
 		progressDialog.setIndeterminate(true);

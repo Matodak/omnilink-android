@@ -110,7 +110,8 @@ public class OmniLinkClientMainActivity extends Activity implements OnItemSelect
 
 			ScrollView mainView = new ScrollView(this);
 			mainLayout = new LinearLayout(this);
-			mainLayout.setOrientation(LinearLayout.VERTICAL);
+            mainLayout.setPadding(0, 300, 0, 0);
+            mainLayout.setOrientation(LinearLayout.VERTICAL);
 			ArrayAdapter<Category> adapter = new ArrayAdapter<Category>(this, android.R.layout.simple_spinner_item,
 					categories);
 			spinner = new Spinner(this);
