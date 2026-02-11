@@ -111,14 +111,24 @@ public class OmniLinkClientMainActivity extends Activity implements OnItemSelect
 			ScrollView mainView = new ScrollView(this);
 			mainLayout = new LinearLayout(this);
             int topPadding = 0;
+            int bottomPadding = 0;
             if (displayMetrics.density == 2.625)
-                if (displayMetrics.heightPixels <= 2400)
-                    topPadding = 275; // Pixel 7
-                else
-                    topPadding = 300; // Pixel 9a
-            else
-                topPadding = 100; // Samsung tablet
-            mainLayout.setPadding(0, topPadding, 0, 0);
+                if (displayMetrics.heightPixels <= 2400) {
+                    // Pixel 7
+                    topPadding = 275;
+                    bottomPadding = 100;
+                }
+                else {
+                    // Pixel 9a
+                    topPadding = 300;
+                    bottomPadding = 150;
+                }
+            else {
+                // Samsung tablet
+                topPadding = 100;
+                bottomPadding = 0;
+            }
+            mainLayout.setPadding(0, topPadding, 0, bottomPadding);
             mainLayout.setOrientation(LinearLayout.VERTICAL);
 			ArrayAdapter<Category> adapter = new ArrayAdapter<Category>(this, android.R.layout.simple_spinner_item,
 					categories);
