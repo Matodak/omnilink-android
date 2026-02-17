@@ -120,7 +120,7 @@ public class OmniLinkClientMainActivity extends Activity implements OnItemSelect
                 }
                 else {
                     // Pixel 9a
-                    topPadding = 300;
+                    topPadding = 275;
                     bottomPadding = 150;
                 }
             else {
