@@ -70,26 +70,34 @@ public class SystemModelImpl extends BaseModelImpl implements SystemModel, Notif
 	
 	@Override
 	public long getDate() {
-		return cachedSystemStatus.getDate().getTime();
+		if (cachedSystemStatus == null) return 0;
+		Date date = cachedSystemStatus.getDate();
+		return date != null ? date.getTime() : 0;
 	}
 
 	@Override
 	public long getSunrise() {
-		return cachedSystemStatus.getSunrise().getTime();
+		if (cachedSystemStatus == null) return 0;
+		Date date = cachedSystemStatus.getSunrise();
+		return date != null ? date.getTime() : 0;
 	}
 
 	@Override
 	public long getSunset() {
-		return cachedSystemStatus.getSunset().getTime();
+		if (cachedSystemStatus == null) return 0;
+		Date date = cachedSystemStatus.getSunset();
+		return date != null ? date.getTime() : 0;
 	}
 
 	@Override
 	public SecurityMode getSecurityMode() {
+		if (cachedAreaStatus == null) return SecurityMode.OFF;
 		return convert(cachedAreaStatus.getAreaMode(), SecurityMode.class);
 	}
 
 	@Override
 	public SystemStatus getSystemStatus() {
+		if (cachedSystemStatus == null || cachedAreaStatus == null) return SystemStatus.SYSTEM_OK;
 		AlarmStatusInfo alarmStatusInfo = cachedSystemStatus.getAlarmStatus(MessageConstants.DEFAULT_AREA);
 		if (alarmStatusInfo != null && alarmStatusInfo.getAlarms().size() > 0) {
 			return SystemStatus.ALARM_ACTIVATION;
