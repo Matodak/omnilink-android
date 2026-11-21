@@ -1,14 +1,16 @@
 <resources>
 
     <string name="category_label">Category</string>
-    <string name="APP_NAME">OmniLink Client</string>
-    <string name="TITLE_ACTIVITY_MAIN">OmniLink Client</string>
-    <string name="BUTTONS">Buttons</string>
-    <string name="SYSTEM">System</string>
+    <string name="APP_NAME">HAI Web-Link II</string>
+    <string name="TITLE_ACTIVITY_MAIN">HAI Web-Link II</string>
+    <string name="WEBLINK_HEADER_TITLE">Web-Link II - Main</string>
+    <string name="WEBLINK_HEADER_SUBTITLE">Tap a page tab to switch categories</string>
+    <string name="BUTTONS">Button</string>
+    <string name="SYSTEM">Home</string>
     <string name="TEMPERATURE">Temperature</string>
     <string name="MESSAGES">Messages</string>
-    <string name="UNITS">Units</string>
-    <string name="INFORMATION">Information</string>
+    <string name="UNITS">Control</string>
+    <string name="INFORMATION">Events</string>
     <string name="MENU_CATEGORY_REFRESH">Refresh</string>
     <string name="MENU_EXIT">Exit</string>
     <string name="MENU_OPTIONS">Options</string>
@@ -29,11 +31,18 @@
 	<string name="PHONE_LINE_STATUS_RING">Ring</string>
 	<string name="PHONE_LINE_STATUS_UNKNOWN">Unknown</string>
 	<string name="SECURITY_MODE">Security Mode</string>
+	<string name="SECURITY">Security</string>
 	<string name="SECURITY_MODE_AWAY">Away</string>
+	<string name="SECURITY_MODE_DISARM">Disarm</string>
 	<string name="SECURITY_MODE_DAY">Day</string>
+	<string name="SECURITY_MODE_DAY_INSTANT">Day Instant</string>
 	<string name="SECURITY_MODE_NIGHT">Night</string>
+	<string name="SECURITY_MODE_NIGHT_DELAYED">Night Delayed</string>
 	<string name="SECURITY_MODE_OFF">Off</string>
 	<string name="SECURITY_MODE_VACATION">Vacation</string>
+	<string name="SECURITY_ACTIONS">Security</string>
+	<string name="SECURITY_ACTION_ARM">Arm</string>
+	<string name="SECURITY_ACTION_DISARM">Disarm</string>
 	<string name="SYSTEM_ALL_UNITS">All Units</string>
 	<string name="SYSTEM_ALL_UNITS_OFF">Off</string>
 	<string name="SYSTEM_ALL_UNITS_ON">On</string>
@@ -61,10 +70,11 @@
 	<string name="MESSAGE_ACTION_PLAY">Call {0}</string>
 	<string name="MESSAGE_ACTION_SHOW">On</string>
 	<string name="MESSAGE_NAME">{0}. {1}</string>
-	<string name="BUTTON_EXECUTE">Execute</string>
+	<string name="BUTTON_EXECUTE">Run</string>
 	<string name="BUTTON_NAME">{0}. {1}</string>
 	<string name="UNIT_CONDITION_OFF">Off</string>
 	<string name="UNIT_CONDITION_ON">On</string>
+	<string name="UNIT_INTENSITY">Intensity</string>
 	<string name="UNIT_NAME">{0}. {1}</string>
 	<string name="ZONE_CONDITION_NOT_READY">Not Ready</string>
 	<string name="ZONE_CONDITION_SECURE">Secure</string>

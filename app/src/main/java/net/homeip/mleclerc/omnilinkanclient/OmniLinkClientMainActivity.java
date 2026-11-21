@@ -33,8 +33,7 @@ import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
@@ -49,13 +48,15 @@ import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 public class OmniLinkClientMainActivity extends AppCompatActivity implements OnSharedPreferenceChangeListener {
 
-    private List<Category> categories = new ArrayList<>();
+    private final List<Category> categories = new ArrayList<>();
+    private final List<Button> categoryButtons = new ArrayList<>();
     private View[] views = new View[0];
     private Category selectedCategory;
     private LinearLayout mainLayout;
+    private LinearLayout categoryTabContainer;
     private FrameLayout loadingOverlay;
     private CircularProgressIndicator progressIndicator;
-    private AutoCompleteTextView categoryDropdown;
+    private MaterialToolbar toolbar;
     private boolean useOmniLink;
     private SharedPreferences sharedPrefs;
     private ModelFactory modelFactory;
@@ -76,17 +77,17 @@ public class OmniLinkClientMainActivity extends AppCompatActivity implements OnS
         justCreated = true;
         setContentView(R.layout.activity_main);
 
-        // Status bar: blue background, white icons (matches toolbar)
-        getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.md_primary));
+        // Status bar follows the page-header blue from Web-Link skin.
+        getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.md_web_page_header_bg));
         WindowInsetsControllerCompat insetsCtrl =
                 WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
         insetsCtrl.setAppearanceLightStatusBars(false); // false = white icons on dark blue bg
 
-        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         mainLayout = findViewById(R.id.mainLayout);
-        categoryDropdown = findViewById(R.id.categorySpinner);
+        categoryTabContainer = findViewById(R.id.categoryTabContainer);
         loadingOverlay = findViewById(R.id.loadingOverlay);
         progressIndicator = findViewById(R.id.progressIndicator);
 
@@ -114,29 +115,52 @@ public class OmniLinkClientMainActivity extends AppCompatActivity implements OnS
         ZoneModel zoneModel = modelFactory.createZoneModel();
         InformationModel infoModel = modelFactory.createInformationModel();
 
-        addCategory(new SystemCategory(this, systemModel, displayMetrics, executor));
+        addCategory(new SystemCategory(this, systemModel, thermostatModel, displayMetrics, executor));
         addCategory(new ThermostatCategory(this, thermostatModel, displayMetrics, executor));
-        addCategory(new MessageCategory(this, messageModel, infoModel, displayMetrics, executor));
         addCategory(new ButtonCategory(this, buttonModel, displayMetrics, executor));
+        addCategory(new MessageCategory(this, messageModel, infoModel, displayMetrics, executor));
         addCategory(new UnitCategory(this, unitModel, displayMetrics, executor));
-        addCategory(new ZoneCategory(this, zoneModel, displayMetrics, executor));
+        addCategory(new ZoneCategory(this, zoneModel, systemModel, displayMetrics, executor));
         addCategory(new InformationCategory(this, infoModel, systemModel, displayMetrics, executor));
 
         int categoryPos = (savedInstanceState != null) ? savedInstanceState.getInt(CATEGORY_PROP, 0) : 0;
 
-        ArrayAdapter<Category> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, categories);
-        categoryDropdown.setAdapter(adapter);
-        categoryDropdown.setOnItemClickListener((parent, view, pos, id) -> {
-            Category category = (Category) parent.getItemAtPosition(pos);
-            displayCategory(category, false);
-        });
+        setupCategoryTabs();
 
         // Set initial selection text and trigger load
         if (!categories.isEmpty()) {
             Category initial = categories.get(categoryPos);
-            categoryDropdown.setText(initial.toString(), false);
             displayCategory(initial, false);
+        }
+    }
+
+    private void setupCategoryTabs() {
+        categoryButtons.clear();
+        categoryTabContainer.removeAllViews();
+
+        for (int i = 0; i < categories.size(); i++) {
+            final int categoryIndex = i;
+            Category category = categories.get(i);
+            Button button = new Button(this);
+            button.setText(category.toString());
+            button.setAllCaps(false);
+            button.setTextSize(12f);
+            button.setMinHeight(0);
+            button.setMinimumHeight(0);
+            button.setBackgroundResource(R.drawable.weblink_tab_unselected);
+            button.setTextColor(ContextCompat.getColor(this, R.color.md_web_tab_unselected_text));
+
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            params.setMargins(0, 0, dp(4), 0);
+            button.setLayoutParams(params);
+            button.setPadding(dp(8), dp(4), dp(8), dp(4));
+
+            button.setOnClickListener(v -> displayCategory(categories.get(categoryIndex), false));
+            categoryTabContainer.addView(button);
+            categoryButtons.add(button);
         }
     }
 
@@ -192,6 +216,7 @@ public class OmniLinkClientMainActivity extends AppCompatActivity implements OnS
 
     private void displayCategory(final Category category, final boolean refresh) {
         selectedCategory = category;
+        highlightSelectedCategory();
 
         for (View view : views) {
             mainLayout.removeView(view);
@@ -238,15 +263,26 @@ public class OmniLinkClientMainActivity extends AppCompatActivity implements OnS
         });
     }
 
+    private void highlightSelectedCategory() {
+        if (selectedCategory == null) return;
+        if (toolbar != null) {
+            toolbar.setSubtitle(selectedCategory.getName());
+        }
+        for (int i = 0; i < categories.size() && i < categoryButtons.size(); i++) {
+            Button button = categoryButtons.get(i);
+            boolean selected = categories.get(i) == selectedCategory;
+            button.setBackgroundResource(selected ? R.drawable.weblink_tab_selected : R.drawable.weblink_tab_unselected);
+            button.setTextColor(ContextCompat.getColor(this,
+                    selected ? R.color.md_web_tab_selected_text : R.color.md_web_tab_unselected_text));
+        }
+    }
+
     @Override
     protected void onSaveInstanceState(Bundle savedInstanceState) {
-        if (categoryDropdown != null && !categories.isEmpty()) {
-            String selected = categoryDropdown.getText().toString();
-            for (int i = 0; i < categories.size(); i++) {
-                if (categories.get(i).toString().equals(selected)) {
-                    savedInstanceState.putInt(CATEGORY_PROP, i);
-                    break;
-                }
+        if (selectedCategory != null) {
+            int selectedIndex = categories.indexOf(selectedCategory);
+            if (selectedIndex >= 0) {
+                savedInstanceState.putInt(CATEGORY_PROP, selectedIndex);
             }
         }
         super.onSaveInstanceState(savedInstanceState);
@@ -298,10 +334,13 @@ public class OmniLinkClientMainActivity extends AppCompatActivity implements OnS
         categories.add(category);
     }
 
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         executor.shutdown();
     }
 }
-

@@ -23,6 +23,8 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
+
 public class InformationCategory extends Category {
 	private static EnumLabel[] SYSTEM_TYPES;
 
@@ -66,55 +68,14 @@ public class InformationCategory extends Category {
 
 	@Override
 	public View[] getViews() {
-		// System type
-		View systemTypeView = createLabelAndTextView(getContext().getString(R.string.SYSTEM_TYPE),
-				EnumLabel.getEnumLabelString(SYSTEM_TYPES, infoModel.getSystemType()));
-
-		// System version
-		View systemVersionView = createLabelAndTextView(getContext().getString(R.string.SYSTEM_VERSION),
-				infoModel.getVersion());
-
-		// Local phone number
-		View localPhoneNumberView = createLabelAndTextView(getContext().getString(R.string.LOCAL_PHONE_NUMBER),
-				infoModel.getLocalPhoneNumber());
-
-		// Sunrise
-		View sunriseView = createDateView(getContext().getString(R.string.SUNRISE_TIME), systemModel.getSunrise(), TIME_LONG);
-
-		// Sunset
-		View sunsetView = createDateView(getContext().getString(R.string.SUNSET_TIME), systemModel.getSunset(), TIME_LONG);
-
-		// Event Log
-		class EventLogExec extends Execution {
-			private boolean download;
-			private int eventLogCount;
-			
-			public EventLogExec(boolean download) {
-				this.download = download;
-			}
-			
-			public boolean execute(Object selection) throws ModelException {
-				systemModel.loadEventLog(download);
-				eventLogCount = systemModel.getEventLogCount();
-				return eventLogCount > 0;
-			}
-			
-			public void postExecute(boolean success) {
-				if (success) {
-					displayEventLog(eventLogCount);
-				}
-			}
-			
-			public boolean isDisplayToast() {
-				return eventLogCount == 0;
-			}
-		};
-		View eventLogView = createLabelAndTwoButtonsView(getContext().getString(R.string.EVENTLOG), getContext()
-				.getString(R.string.EVENTLOG_VIEW), new EventLogExec(false), getContext().getString(R.string.EVENTLOG_LOAD),
-				new EventLogExec(true));
-
-		return new View[] { systemTypeView, systemVersionView, localPhoneNumberView, sunriseView, sunsetView,
-				eventLogView };
+		java.util.ArrayList<View> views = new java.util.ArrayList<View>();
+		int count = systemModel.getEventLogCount();
+		for (int i = 0; i < count; i++) {
+			String date = android.text.format.DateFormat.format(
+					"MM/dd 'at' h:mm a", systemModel.getEventLogDate(i)).toString();
+			views.add(createLabelAndTextView(date, getEventLogDescription(i)));
+		}
+		return views.toArray(new View[0]);
 	}
 
 	@Override
@@ -132,12 +93,15 @@ public class InformationCategory extends Category {
 	public void load() throws ModelException {
 		infoModel.load();
 		systemModel.load();
+		systemModel.loadEventLog(true);
 	}
 
 	private void displayEventLog(int eventLogCount) {
 		ScrollView eventLogView = new ScrollView(getContext());
 		LinearLayout layout = new LinearLayout(getContext());
 		layout.setOrientation(LinearLayout.VERTICAL);
+		layout.setPadding(dp(12), dp(10), dp(12), dp(10));
+		layout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.md_web_background));
 		for (int i = 0; i < eventLogCount; i++) {
 			long eventLogEntryDate = systemModel.getEventLogDate(i);
 			String eventLogEntryText = getEventLogDescription(i);
@@ -146,9 +110,14 @@ public class InformationCategory extends Category {
 			SimpleDateFormat df = new SimpleDateFormat("MM/dd/yyyy hh:mm a", Locale.getDefault()); 
 			TextView eventLogEntryDateView = new TextView(getContext());
 			eventLogEntryDateView.setText(df.format(calendar.getTime()));
+			eventLogEntryDateView.setTextColor(ContextCompat.getColor(getContext(), R.color.md_web_header_text));
+			eventLogEntryDateView.setTextSize(13f);
 			layout.addView(eventLogEntryDateView);
 			TextView eventLogTextView = new TextView(getContext());
 			eventLogTextView.setText(eventLogEntryText);
+			eventLogTextView.setTextColor(ContextCompat.getColor(getContext(), R.color.md_web_value_text));
+			eventLogTextView.setTextSize(14f);
+			eventLogTextView.setPadding(0, 0, 0, dp(10));
 			layout.addView(eventLogTextView);					
 		}
 		eventLogView.addView(layout);

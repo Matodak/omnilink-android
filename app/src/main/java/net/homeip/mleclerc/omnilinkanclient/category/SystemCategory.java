@@ -4,6 +4,8 @@ import net.homeip.mleclerc.omnilinkanclient.R;
 import net.homeip.mleclerc.omnilinkanclient.model.ModelException;
 import net.homeip.mleclerc.omnilinkanclient.model.SystemModel;
 import net.homeip.mleclerc.omnilinkanclient.model.SystemModelListener;
+import net.homeip.mleclerc.omnilinkanclient.model.ThermostatModel;
+import net.homeip.mleclerc.omnilinkanclient.model.enumeration.EventType;
 import net.homeip.mleclerc.omnilinkanclient.model.enumeration.BasicUnitControl;
 import net.homeip.mleclerc.omnilinkanclient.model.enumeration.PhoneLineStatus;
 import net.homeip.mleclerc.omnilinkanclient.model.enumeration.SecurityMode;
@@ -22,14 +24,14 @@ public class SystemCategory extends Category implements SystemModelListener {
 	private static EnumLabel[] SECURITY_MODES;
 	
 	private SystemModel systemModel;
-	private View systemStatusView;
-	private View phoneLineStatusView;
-	private View securityModeView;
+	private ThermostatModel thermostatModel;
 	
-	public SystemCategory(Context context, SystemModel systemModel, DisplayMetrics displayMetrics, ExecutorService executor) {
+	public SystemCategory(Context context, SystemModel systemModel, ThermostatModel thermostatModel,
+			DisplayMetrics displayMetrics, ExecutorService executor) {
 		super(context, displayMetrics, executor);
 		
 		this.systemModel = systemModel;
+		this.thermostatModel = thermostatModel;
 		
 		SYSTEM_STATUSES = new EnumLabel[] {
 			new EnumLabel<SystemStatus>(SystemStatus.AC_POWER_OFF, context.getString(R.string.SYSTEM_STATUS_AC_POWER_OFF)), 
@@ -51,8 +53,11 @@ public class SystemCategory extends Category implements SystemModelListener {
 		
 		SECURITY_MODES = new EnumLabel[] { 
 			new EnumLabel<SecurityMode>(SecurityMode.OFF, context.getString(R.string.SECURITY_MODE_OFF)), 
+			new EnumLabel<SecurityMode>(SecurityMode.DISARM, context.getString(R.string.SECURITY_MODE_DISARM)),
 			new EnumLabel<SecurityMode>(SecurityMode.DAY, context.getString(R.string.SECURITY_MODE_DAY)), 
+			new EnumLabel<SecurityMode>(SecurityMode.DAY_INSTANT, context.getString(R.string.SECURITY_MODE_DAY_INSTANT)),
 			new EnumLabel<SecurityMode>(SecurityMode.NIGHT, context.getString(R.string.SECURITY_MODE_NIGHT)), 
+			new EnumLabel<SecurityMode>(SecurityMode.NIGHT_DELAYED, context.getString(R.string.SECURITY_MODE_NIGHT_DELAYED)),
 			new EnumLabel<SecurityMode>(SecurityMode.AWAY, context.getString(R.string.SECURITY_MODE_AWAY)),
 			new EnumLabel<SecurityMode>(SecurityMode.VACATION, context.getString(R.string.SECURITY_MODE_VACATION))
 		};
@@ -65,39 +70,27 @@ public class SystemCategory extends Category implements SystemModelListener {
 	
 	@Override
 	public View[] getViews() {
-		// System date & time
-		View systemTimeView = createDateView(getContext().getString(R.string.SYSTEM_TIME), systemModel.getDate(), DATE_LONG | TIME_LONG);
-		
-		// System status
-		systemStatusView = createLabelAndTextView(getContext().getString(R.string.SYSTEM_STATUS), EnumLabel.getEnumLabelString(SYSTEM_STATUSES, systemModel.getSystemStatus()));
+		java.util.ArrayList<View> views = new java.util.ArrayList<View>();
+		views.add(createDateView(getContext().getString(R.string.SYSTEM_TIME),
+				systemModel.getDate(), DATE_LONG | TIME_LONG));
+		views.add(createLabelAndTextView("Main Area",
+				EnumLabel.getEnumLabelString(SECURITY_MODES, systemModel.getSecurityMode())));
+		views.add(createDateView(getContext().getString(R.string.SUNRISE_TIME),
+				systemModel.getSunrise(), TIME_LONG));
+		views.add(createDateView(getContext().getString(R.string.SUNSET_TIME),
+				systemModel.getSunset(), TIME_LONG));
 
-		// Phone line status
-		phoneLineStatusView = createLabelAndTextView(getContext().getString(R.string.PHONE_LINE_STATUS), EnumLabel.getEnumLabelString(PHONE_LINE_STATUSES, systemModel.getPhoneLineStatus()));
+		if (thermostatModel.isLoaded()) {
+			views.add(createLabelAndTextView(getContext().getString(R.string.TEMPERATURE_CURRENT),
+					thermostatModel.getCurrentTemperature() + "\u00B0"));
+		}
 
-		// Security mode
-		EnumLabel securityModeLabel = EnumLabel.getEnumLabel(SECURITY_MODES, systemModel.getSecurityMode());
-		Execution<EnumLabel<SecurityMode>> securityExec = new Execution<EnumLabel<SecurityMode>>() {
-			public boolean execute(EnumLabel<SecurityMode> selection) throws ModelException {
-				SecurityMode selectedSecurityMode = selection.getEnumValue();
-				return systemModel.setSecurityMode(selectedSecurityMode);
-			}
-		};
-		securityModeView = createLabelAndChoiceView(getContext().getString(R.string.SECURITY_MODE), SECURITY_MODES, securityModeLabel, securityExec);
-		
-		// All Units On/Off
-		Execution allUnitsOnExec = new Execution() {			
-			public boolean execute(Object selection) throws ModelException {
-				return systemModel.setAllUnitsControl(BasicUnitControl.ON);
-			}
-		};
-		Execution allUnitsOffExec = new Execution() {			
-			public boolean execute(Object selection) throws ModelException {
-				return systemModel.setAllUnitsControl(BasicUnitControl.OFF);
-			}
-		};
-		View allUnitsView = createLabelAndTwoButtonsView(getContext().getString(R.string.SYSTEM_ALL_UNITS), getContext().getString(R.string.SYSTEM_ALL_UNITS_ON), allUnitsOnExec, getContext().getString(R.string.SYSTEM_ALL_UNITS_OFF), allUnitsOffExec);
-				
-		return new View[] { systemTimeView, systemStatusView, phoneLineStatusView, securityModeView, allUnitsView };
+		for (int i = 0; i < Math.min(5, systemModel.getEventLogCount()); i++) {
+			String date = android.text.format.DateFormat.format(
+					"MM/dd 'at' h:mm a", systemModel.getEventLogDate(i)).toString();
+			views.add(createLabelAndTextView(date, getEventDescription(i)));
+		}
+		return views.toArray(new View[0]);
 	}
 
 	@Override
@@ -113,8 +106,9 @@ public class SystemCategory extends Category implements SystemModelListener {
 	@Override
 	public void load() throws ModelException {
 		systemModel.addListener(this);
-		
 		systemModel.load();
+		systemModel.loadEventLog(false);
+		thermostatModel.load();
 	}
 
 	@Override
@@ -128,35 +122,30 @@ public class SystemCategory extends Category implements SystemModelListener {
 
 	@Override
 	public void securityModeChanged(final SecurityMode securityMode) {
-		Handler refresh = new Handler(Looper.getMainLooper());
-		refresh.post(new Runnable() {
-		    public void run()
-		    {
-		    	EnumLabel securityModeLabel = EnumLabel.getEnumLabel(SECURITY_MODES, systemModel.getSecurityMode());
-		    	setLabelAndChoiceView(securityModeView, securityModeLabel);
-		    }
-		});
 	}
 
 	@Override
 	public void phoneLineStatusChanged(final PhoneLineStatus phoneLineStatus) {
-		Handler refresh = new Handler(Looper.getMainLooper());
-		refresh.post(new Runnable() {
-		    public void run()
-		    {
-		    	setLabelAndTextView(phoneLineStatusView, EnumLabel.getEnumLabelString(PHONE_LINE_STATUSES, phoneLineStatus));
-		    }
-		});
 	}
 
 	@Override
 	public void systemStatusChanged(final SystemStatus systemStatus) {
-		Handler refresh = new Handler(Looper.getMainLooper());
-		refresh.post(new Runnable() {
-		    public void run()
-		    {
-		    	setLabelAndTextView(systemStatusView, EnumLabel.getEnumLabelString(SYSTEM_STATUSES, systemStatus));
-		    }
-		});
+	}
+
+	private String getEventDescription(int index) {
+		EventType type = systemModel.getEventLogEventType(index);
+		int p1 = systemModel.getEventLogP1(index);
+		int p2 = systemModel.getEventLogP2(index);
+		if (type == EventType.DISARMED) return "Main Area Disarmed";
+		if (type == EventType.DAY) return "Main Area Armed Day";
+		if (type == EventType.NIGHT) return "Main Area Armed Night";
+		if (type == EventType.AWAY) return "Main Area Armed Away";
+		if (type == EventType.VACATION) return "Main Area Armed Vacation";
+		if (type == EventType.ZONE_TRIPPED) return "Zone " + p1 + " tripped";
+		if (type == EventType.ZONE_RESTORED) return "Zone " + p1 + " restored";
+		if (type == EventType.ZONE_TROUBLE) return "Zone " + p1 + " trouble";
+		if (type == EventType.ALARM_ACTIVATED) return "Alarm " + p1 + " activated";
+		if (type == EventType.ALARM_RESET) return "Alarm " + p1 + " reset";
+		return type.toString();
 	}
 }

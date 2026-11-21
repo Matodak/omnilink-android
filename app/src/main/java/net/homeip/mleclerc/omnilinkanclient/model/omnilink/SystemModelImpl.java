@@ -291,14 +291,19 @@ public class SystemModelImpl extends BaseModelImpl implements SystemModel, Notif
 	
 	private List<EventLogInfo> getEventLog() throws CommunicationException {
 		List<EventLogInfo> eventLog = new ArrayList<EventLogInfo>();
-		
+
 		int eventLogEntryNo = 0;
-		while (true) {
+		int previousEntryNo = -1;
+		while (eventLog.size() < 100) {
 			try {
 				ReadEventRecordReport reply = execute(new ReadEventRecordRequest(eventLogEntryNo, -1));
 				EventLogInfo eventLogInfo = reply.getInfo();
 				eventLog.add(eventLogInfo);
 				eventLogEntryNo = eventLogInfo.getNumber();
+				if (eventLogEntryNo == previousEntryNo) {
+					break;
+				}
+				previousEntryNo = eventLogEntryNo;
 			} catch (EndOfDataException ex) {
 				break;
 			}

@@ -12,6 +12,7 @@ import net.homeip.mleclerc.omnilinkanclient.util.MySpinner;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Typeface;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
@@ -28,6 +29,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.core.content.ContextCompat;
 
 public abstract class Category {
 	protected abstract class Execution<T> {
@@ -88,6 +91,10 @@ public abstract class Category {
 		return context;
 	}
 
+	protected int dp(int value) {
+		return Math.round(value * getContext().getResources().getDisplayMetrics().density);
+	}
+
 	protected void runOnUiThread(Runnable runnable) {
 		if (context instanceof Activity) {
 			((Activity) context).runOnUiThread(runnable);
@@ -102,20 +109,22 @@ public abstract class Category {
 	
 	protected View createDateView(String label, long date, int format) {
 		RelativeLayout layout = new RelativeLayout(getContext());
+		applyRowChrome(layout);
 
 		TextView labelView = new TextView(getContext());
 		RelativeLayout.LayoutParams labelLayoutParams = new RelativeLayout.LayoutParams(
 				LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-		labelLayoutParams.setMargins(0, 25, 0, 25);
+		labelLayoutParams.setMargins(0, dp(4), 0, dp(4));
 		labelView.setLayoutParams(labelLayoutParams);
 		labelView.setText(label);
+		styleLabel(labelView);
 		layout.addView(labelView);
 
 		TextView dateTimeView = new TextView(getContext());
 		RelativeLayout.LayoutParams dateTimeLayoutParams = new RelativeLayout.LayoutParams(
 				LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-		dateTimeLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-		dateTimeLayoutParams.setMargins(0, 25, 0, 25);
+		dateTimeLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
+		dateTimeLayoutParams.setMargins(0, dp(4), 0, dp(4));
 		dateTimeView.setLayoutParams(dateTimeLayoutParams);
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTimeInMillis(date);
@@ -128,6 +137,7 @@ public abstract class Category {
 		}
 		SimpleDateFormat df = new SimpleDateFormat(strbuf.toString(), Locale.getDefault());
 		dateTimeView.setText(df.format(calendar.getTime()));
+		styleValue(dateTimeView);
 		layout.addView(dateTimeView);
 
 		return layout;
@@ -135,22 +145,25 @@ public abstract class Category {
 
 	protected View createLabelAndTextView(String label, String text) {
 		RelativeLayout layout = new RelativeLayout(getContext());
+		applyRowChrome(layout);
 
 		TextView labelView = new TextView(getContext());
 		RelativeLayout.LayoutParams labelLayoutParams = new RelativeLayout.LayoutParams(
 				LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-		labelLayoutParams.setMargins(0, 25, 0, 25);
+		labelLayoutParams.setMargins(0, dp(4), 0, dp(4));
 		labelView.setLayoutParams(labelLayoutParams);
 		labelView.setText(label);
+		styleLabel(labelView);
 		layout.addView(labelView);
 
 		TextView textView = new TextView(getContext());
 		RelativeLayout.LayoutParams textLayoutParams = new RelativeLayout.LayoutParams(
 				LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-		textLayoutParams.setMargins(0, 25, 0, 25);
-		textLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+		textLayoutParams.setMargins(0, dp(4), 0, dp(4));
+		textLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
 		textView.setLayoutParams(textLayoutParams);
 		textView.setText(text);
+		styleValue(textView);
 		layout.addView(textView);
 
 		return layout;
@@ -165,12 +178,14 @@ public abstract class Category {
 	
 	protected View createLabelAndChoiceView(String label, Object[] choices, Object initialChoice, Execution execution) {
 		RelativeLayout layout = new RelativeLayout(getContext());
+		applyRowChrome(layout);
 
 		TextView labelView = new TextView(getContext());
 		labelView.setText(label);
+		styleLabel(labelView);
 		RelativeLayout.LayoutParams labelLayoutParams = new RelativeLayout.LayoutParams(
 				LinearLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		labelLayoutParams.setMargins(0, 25, 0, 25);
+		labelLayoutParams.setMargins(0, dp(4), 0, dp(4));
 		labelView.setLayoutParams(labelLayoutParams);
 		layout.addView(labelView);
 
@@ -180,7 +195,7 @@ public abstract class Category {
 		spinner.setAdapter(adapter);
 		RelativeLayout.LayoutParams spinnerLayoutParams = new RelativeLayout.LayoutParams(
 				RelativeLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-		spinnerLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+		spinnerLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
 		spinner.setLayoutParams(spinnerLayoutParams);
 		if (initialChoice != null) {
 			int initialChoicePos = adapter.getPosition(initialChoice);
@@ -204,21 +219,24 @@ public abstract class Category {
 	
 	protected View createLabelAndButtonView(String label, String buttonText, Execution execution) {
 		RelativeLayout layout = new RelativeLayout(getContext());
+		applyRowChrome(layout);
 
 		TextView labelView = new TextView(getContext());
 		labelView.setText(label);
+		styleLabel(labelView);
 		RelativeLayout.LayoutParams labelLayoutParams = new RelativeLayout.LayoutParams(
 				RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		labelLayoutParams.setMargins(0, 25, 0, 25);
+		labelLayoutParams.setMargins(0, dp(4), 0, dp(4));
 		labelView.setLayoutParams(labelLayoutParams);
 		layout.addView(labelView);
 
 		Button button = new Button(getContext());
 		button.setText(buttonText);
 		button.setIncludeFontPadding(false);
+		styleActionButton(button);
 		RelativeLayout.LayoutParams buttonLayoutParams = new RelativeLayout.LayoutParams(
 				LinearLayout.LayoutParams.WRAP_CONTENT, buttonHeight);
-		buttonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+		buttonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
 		button.setLayoutParams(buttonLayoutParams);
 		button.setOnClickListener(new ButtonOnClickListenerImpl(execution));
 		layout.addView(button);
@@ -236,25 +254,28 @@ public abstract class Category {
 	protected View createLabelAndTwoButtonsView(String label, String buttonText1, Execution execution1, String buttonText2,
 			Execution execution2) {
 		RelativeLayout layout = new RelativeLayout(getContext());
+		applyRowChrome(layout);
 
 		TextView labelView = new TextView(getContext());
 		labelView.setText(label);
+		styleLabel(labelView);
 		RelativeLayout.LayoutParams labelLayoutParams = new RelativeLayout.LayoutParams(
 				RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		labelLayoutParams.setMargins(0, 25, 0, 25);
+		labelLayoutParams.setMargins(0, dp(4), 0, dp(4));
 		labelView.setLayoutParams(labelLayoutParams);
 		layout.addView(labelView);
 
 		LinearLayout buttonLayout = new LinearLayout(getContext());
 		RelativeLayout.LayoutParams buttonLayoutParams = new RelativeLayout.LayoutParams(
 				RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		buttonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+		buttonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
 		buttonLayout.setLayoutParams(buttonLayoutParams);
 		layout.addView(buttonLayout);
 
 		Button button1 = new Button(getContext());
 		button1.setText(buttonText1);
 		button1.setIncludeFontPadding(false);
+		styleActionButton(button1);
 		LinearLayout.LayoutParams buttonLayoutParams1 = new LinearLayout.LayoutParams(
 				LinearLayout.LayoutParams.WRAP_CONTENT, buttonHeight);
 		button1.setLayoutParams(buttonLayoutParams1);
@@ -264,8 +285,10 @@ public abstract class Category {
 		Button button2 = new Button(getContext());
 		button2.setText(buttonText2);
 		button2.setIncludeFontPadding(false);
+		styleActionButton(button2);
 		LinearLayout.LayoutParams buttonLayoutParams2 = new LinearLayout.LayoutParams(
 				LinearLayout.LayoutParams.WRAP_CONTENT, buttonHeight);
+		buttonLayoutParams2.setMargins(dp(6), 0, 0, 0);
 		button2.setLayoutParams(buttonLayoutParams2);
 		button2.setOnClickListener(new ButtonOnClickListenerImpl(execution2));
 		buttonLayout.addView(button2);
@@ -275,19 +298,22 @@ public abstract class Category {
 
 	protected View createCheckBoxAndTextView(String label, boolean checked, Execution execution, String text) {
 		RelativeLayout layout = new RelativeLayout(getContext());
+		applyRowChrome(layout);
 
 		CheckBox checkBox = new CheckBox(getContext());
 		checkBox.setText(label);
 		checkBox.setChecked(checked);
+		checkBox.setTextColor(ContextCompat.getColor(getContext(), R.color.md_web_header_text));
 		checkBox.setOnCheckedChangeListener(new CheckBoxOnCheckedListenerImpl(execution));
 		layout.addView(checkBox);
 
 		TextView labelView = new TextView(getContext());
 		labelView.setText(text);
+		styleValue(labelView);
 		RelativeLayout.LayoutParams labelLayoutParams = new RelativeLayout.LayoutParams(
 				RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		labelLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-		labelLayoutParams.setMargins(0, 25, 0, 25);
+		labelLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
+		labelLayoutParams.setMargins(0, dp(4), 0, dp(4));
 		labelView.setLayoutParams(labelLayoutParams);
 		layout.addView(labelView);
 
@@ -302,6 +328,32 @@ public abstract class Category {
 		
 		TextView labelView = (TextView) layout.getChildAt(1);
 		labelView.setText(text);
+	}
+
+	private void applyRowChrome(RelativeLayout layout) {
+		LinearLayout.LayoutParams rowLayoutParams = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+		rowLayoutParams.setMargins(0, dp(1), 0, 0);
+		layout.setLayoutParams(rowLayoutParams);
+		layout.setBackgroundResource(R.drawable.weblink_row_background);
+		layout.setPadding(dp(6), dp(4), dp(6), dp(4));
+	}
+
+	private void styleLabel(TextView textView) {
+		textView.setTextColor(ContextCompat.getColor(getContext(), R.color.md_web_header_text));
+		textView.setTextSize(13f);
+		textView.setTypeface(Typeface.DEFAULT_BOLD);
+	}
+
+	private void styleValue(TextView textView) {
+		textView.setTextColor(ContextCompat.getColor(getContext(), R.color.md_web_value_text));
+		textView.setTextSize(13f);
+	}
+
+	private void styleActionButton(Button button) {
+		button.setBackgroundResource(R.drawable.weblink_action_button);
+		button.setTextColor(ContextCompat.getColor(getContext(), R.color.md_web_action_button_text));
+		button.setAllCaps(false);
 	}
 	
 	class BaseListenerImpl {

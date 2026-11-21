@@ -1,34 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Primary: deep blue -->
-    <color name="md_primary">#1A4FA0</color>
-    <!-- On-primary: white text/icons on blue -->
-    <color name="md_on_primary">#FFFFFF</color>
-    <!-- Primary container: light blue tint for surfaces -->
-    <color name="md_primary_container">#D6E4FF</color>
-    <!-- On-primary-container: dark navy for text on light-blue surfaces -->
-    <color name="md_on_primary_container">#00205C</color>
+    <!-- Primary page header blue from skin.css -->
+    <color name="md_primary">#6699CC</color>
+    <color name="md_on_primary">#F7F9FE</color>
+    <color name="md_primary_container">#93BEE2</color>
+    <color name="md_on_primary_container">#314E95</color>
 
-    <!-- Secondary: vivid yellow/amber -->
-    <color name="md_secondary">#F5C400</color>
-    <!-- On-secondary: dark charcoal for readability on yellow -->
-    <color name="md_on_secondary">#3A2E00</color>
-    <!-- Secondary container: pale yellow -->
-    <color name="md_secondary_container">#FFF0A0</color>
-    <!-- On-secondary-container: dark amber text -->
-    <color name="md_on_secondary_container">#221B00</color>
+    <!-- Secondary accents from skin.css -->
+    <color name="md_secondary">#93BEE2</color>
+    <color name="md_on_secondary">#314E95</color>
+    <color name="md_secondary_container">#E2EBF6</color>
+    <color name="md_on_secondary_container">#314E95</color>
 
-    <!-- Surface / background: crisp white -->
     <color name="md_surface">#FFFFFF</color>
-    <color name="md_on_surface">#1C1B1F</color>
-    <color name="md_surface_variant">#E8EDF5</color>
-    <color name="md_on_surface_variant">#44474F</color>
+    <color name="md_on_surface">#314E95</color>
+    <color name="md_surface_variant">#F7F9FE</color>
+    <color name="md_on_surface_variant">#314E95</color>
     <color name="md_background">#FFFFFF</color>
-    <color name="md_on_background">#1C1B1F</color>
+    <color name="md_on_background">#314E95</color>
 
-    <!-- Outline / divider -->
-    <color name="md_outline">#74777F</color>
+    <color name="md_outline">#93BEE2</color>
 
-    <!-- Loading overlay scrim -->
     <color name="loading_scrim">#80000000</color>
+
+    <!-- Classic Web-Link skin.css palette -->
+    <color name="md_web_background">#FFFFFF</color>
+    <color name="md_web_row_background">#F7F9FE</color>
+    <color name="md_web_border">#93BEE2</color>
+    <color name="md_web_header_text">#314E95</color>
+    <color name="md_web_subtle_text">#314E95</color>
+    <color name="md_web_value_text">#314E95</color>
+    <color name="md_web_tab_unselected_bg">#E2EBF6</color>
+    <color name="md_web_tab_selected_bg">#6699CC</color>
+    <color name="md_web_tab_selected_text">#F7F9FE</color>
+    <color name="md_web_tab_unselected_text">#314E95</color>
+    <color name="md_web_action_button_bg">#E2EBF6</color>
+    <color name="md_web_action_button_text">#314E95</color>
+    <color name="md_web_logo_banner_bg">#E2EBF6</color>
+    <color name="md_web_page_header_bg">#6699CC</color>
 </resources>
