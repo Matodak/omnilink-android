@@ -11,67 +11,96 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fitsSystemWindows="true"
-        android:background="@color/md_primary">
+        android:background="@color/md_web_logo_banner_bg">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/md_primary"
-            android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar"
+            android:background="@color/md_web_logo_banner_bg"
+            android:theme="@style/ThemeOverlay.Material3.Light"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-            app:titleTextColor="@color/md_on_primary"
-            app:subtitleTextColor="@color/md_secondary"
+            app:titleCentered="true"
+            app:titleTextColor="@color/md_web_header_text"
+            app:subtitleTextColor="@color/md_web_subtle_text"
             app:title="@string/APP_NAME" />
 
-        <!-- Yellow accent strip under toolbar -->
         <View
             android:layout_width="match_parent"
-            android:layout_height="4dp"
-            android:background="@color/md_secondary" />
+            android:layout_height="1dp"
+            android:background="@color/md_web_border" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!--
-        A vertical LinearLayout acts as the full content area below the AppBar.
-        The category selector is pinned at the top; only the ScrollView beneath it scrolls.
-    -->
     <LinearLayout
         android:id="@+id/contentContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/md_web_background"
         android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- Sticky category selector — never scrolls -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/categoryInputLayout"
+        <LinearLayout
+            android:id="@+id/webLinkHeaderPanel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/content_padding"
+            android:layout_marginTop="10dp"
             android:layout_marginRight="@dimen/content_padding"
-            android:layout_marginTop="@dimen/content_padding"
-            android:hint="@string/category_label"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+            android:background="@color/md_web_page_header_bg"
+            android:orientation="vertical"
+            android:paddingLeft="8dp"
+            android:paddingTop="6dp"
+            android:paddingRight="8dp"
+            android:paddingBottom="6dp">
 
-            <AutoCompleteTextView
-                android:id="@+id/categorySpinner"
+            <TextView
+                android:id="@+id/webLinkPanelTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="none"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
-                android:saveEnabled="false" />
+                android:text="@string/WEBLINK_HEADER_TITLE"
+                android:textColor="@color/md_on_primary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
 
-        </com.google.android.material.textfield.TextInputLayout>
+            <TextView
+                android:id="@+id/webLinkPanelSubtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/WEBLINK_HEADER_SUBTITLE"
+                android:textColor="@color/md_on_primary"
+                android:textSize="11sp" />
+
+        </LinearLayout>
+
+        <HorizontalScrollView
+            android:id="@+id/categoryTabScroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/content_padding"
+            android:layout_marginTop="8dp"
+            android:layout_marginRight="@dimen/content_padding"
+            android:fillViewport="true"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/categoryTabContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal" />
+
+        </HorizontalScrollView>
 
         <com.google.android.material.divider.MaterialDivider
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="4dp"
             android:layout_marginLeft="@dimen/content_padding"
-            android:layout_marginRight="@dimen/content_padding" />
+            android:layout_marginTop="8dp"
+            android:layout_marginRight="@dimen/content_padding"
+            android:layout_marginBottom="4dp"
+            app:dividerColor="@color/md_web_border" />
 
         <!-- Scrollable category content -->
         <ScrollView
@@ -115,6 +144,3 @@
     </FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
-
-

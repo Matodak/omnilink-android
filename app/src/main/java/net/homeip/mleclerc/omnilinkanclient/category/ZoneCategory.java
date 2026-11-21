@@ -6,6 +6,7 @@ import net.homeip.mleclerc.omnilinkanclient.R;
 import net.homeip.mleclerc.omnilinkanclient.model.ModelException;
 import net.homeip.mleclerc.omnilinkanclient.model.ZoneModel;
 import net.homeip.mleclerc.omnilinkanclient.model.ZoneModelListener;
+import net.homeip.mleclerc.omnilinkanclient.model.SystemModel;
 import net.homeip.mleclerc.omnilinkanclient.model.enumeration.LatchedAlarmStatus;
 import net.homeip.mleclerc.omnilinkanclient.model.enumeration.ZoneCondition;
 import net.homeip.mleclerc.omnilinkanclient.util.EnumLabel;
@@ -21,12 +22,15 @@ public class ZoneCategory extends Category implements ZoneModelListener {
 	private static EnumLabel[] ZONE_LATCHED_ALARM_STATUSES;
 
 	private ZoneModel zoneModel;
+	private SystemModel systemModel;
 	View[] zoneViews;
 	
-	public ZoneCategory(Context context, ZoneModel zoneModel, DisplayMetrics displayMetrics, ExecutorService executor) {
+	public ZoneCategory(Context context, ZoneModel zoneModel, SystemModel systemModel,
+			DisplayMetrics displayMetrics, ExecutorService executor) {
 		super(context, displayMetrics, executor);
 		
 		this.zoneModel = zoneModel;
+		this.systemModel = systemModel;
 
 		ZONES_CONDITIONS = new EnumLabel[] { 
 			new EnumLabel<ZoneCondition>(ZoneCondition.NOT_READY, getContext().getString(R.string.ZONE_CONDITION_NOT_READY)),
@@ -43,13 +47,29 @@ public class ZoneCategory extends Category implements ZoneModelListener {
 
 	@Override
 	public String getName() {
-		return getContext().getString(R.string.ZONES);
+		return getContext().getString(R.string.SECURITY);
 	}
 	
 	@Override
 	public View[] getViews() {
 		int zoneCount = zoneModel.getZoneCount();
 		zoneViews = new View[zoneCount];
+		java.util.ArrayList<View> views = new java.util.ArrayList<View>();
+
+		Execution armExec = new Execution() {
+			public boolean execute(Object selection) throws ModelException {
+				return systemModel.setSecurityMode(net.homeip.mleclerc.omnilinkanclient.model.enumeration.SecurityMode.AWAY);
+			}
+		};
+		Execution disarmExec = new Execution() {
+			public boolean execute(Object selection) throws ModelException {
+				return systemModel.setSecurityMode(net.homeip.mleclerc.omnilinkanclient.model.enumeration.SecurityMode.DISARM);
+			}
+		};
+		views.add(createLabelAndTwoButtonsView("Main Area",
+				getContext().getString(R.string.SECURITY_ACTION_ARM), armExec,
+				getContext().getString(R.string.SECURITY_ACTION_DISARM), disarmExec));
+
 		for (int i = 0; i < zoneCount; i++) {
 			final int zoneNumber = zoneModel.getZoneNumber(i);
 			String zoneName = zoneModel.getZoneName(i);
@@ -65,14 +85,15 @@ public class ZoneCategory extends Category implements ZoneModelListener {
 			};
 			final View zoneView = createCheckBoxAndTextView(MessageFormat.format(getContext().getString(R.string.ZONE_NAME), new Object[] {Integer.valueOf(zoneNumber), zoneName}), zoneBypassed, zoneExec, zoneStatusLabel.toString());
 			zoneViews[i] = zoneView;
+			views.add(zoneView);
 		}
 		
-		return zoneViews;
+		return views.toArray(new View[0]);
 	}
 	
 	@Override
 	public boolean isLoaded() {
-		return zoneModel.isLoaded();
+		return zoneModel.isLoaded() && systemModel.isLoaded();
 	}
 
 	@Override
@@ -83,7 +104,7 @@ public class ZoneCategory extends Category implements ZoneModelListener {
 	@Override
 	public void load() throws ModelException {
 		this.zoneModel.addListener(this);
-		
+		this.systemModel.load();
 		zoneModel.load();
 	}
 

@@ -44,3 +44,8 @@ Optional - for older project format, add this section to your gitignore file:
 *.ipr
 *~
 *.swp
+
+# crawler artifacts
+artifacts/
+__pycache__/
+*.pyc
